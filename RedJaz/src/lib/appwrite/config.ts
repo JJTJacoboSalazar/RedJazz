@@ -9,6 +9,7 @@ export const appwriteConfig = {
 export const client = new Client()
 
 client.setProject(appwriteConfig.projectId)
+client.setEndpoint(appwriteConfig.url)
 
 
 export const account = new Account(client)
