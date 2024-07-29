@@ -14,13 +14,16 @@ import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import { SingupValidation } from "@/lib/validation"
 import { Loader } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { createUserAccount } from "@/lib/appwrite/api"
 import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations"
+import { useUserContext } from "@/context/AuthContext"
 
 
 const SignupForm = () => {
-  const toast = useToast()
+  const {toast} = useToast()
+  const {checkAuthUser, isLoading: isUserLoading} = useUserContext()
+  const navigate = useNavigate()
 
   const {mutateAsync: createNewUserAccount, isLoading: isCreatingUser} = useCreateUserAccount()
 
@@ -42,7 +45,7 @@ const SignupForm = () => {
     async function onSubmit(values: z.infer<typeof SingupValidation>) {
       const newUser = await createUserAccount(values)
       if(!newUser){
-        return toast.toast({
+        return toast({
           title: 'Signup failed. Please try again',
         })
       }
@@ -51,11 +54,22 @@ const SignupForm = () => {
         password: values.password,
       })
       if(!session){
-        return toast.toast({
+        return toast({
           title: 'Sign in failed. Please try again',
         })
       }
+
+      const isLoggedIn = await checkAuthUser()
+
+      if(isLoggedIn){
+        form.reset()
+        navigate('/')
+    } else {
+      return toast({
+        title: 'Sign in failed. Please try again',
+      })
     }
+  }
   
   return (
     <Form {...form}>

@@ -44,12 +44,12 @@ export type INavLink = {
     id: string;
     name: string;
     username: string;
-    email: string;
-    imageUrl: string;
+    email?: string;
+    imageUrl?: string;
     bio: string;
   };
 
-  export type ICurrentAccount = {
+  export interface ICurrentAccount {
     $id: string;
     name: string;
     username: string;

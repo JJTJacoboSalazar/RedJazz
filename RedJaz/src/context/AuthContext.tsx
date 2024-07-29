@@ -29,31 +29,36 @@ const AuthProvider = ({children}: {children: React.ReactNode} ) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const navigate = useNavigate();
 
-    const checkAuthUser = async () => {
-        try {
-            const currentAccount = await getCurrentUser() as ICurrentAccount;
+    const isCurrentAccount = (account: any): account is ICurrentAccount => {
+        return account && typeof account.$id === 'string' && typeof account.name === 'string' && typeof account.username === 'string';
+      };
 
-            if(currentAccount) {
-                setUser({
-                    id: currentAccount.$id,
-                    name: currentAccount.name,
-                    username: currentAccount.username,
-                    email: currentAccount?.email || '',
-                    imageUrl: currentAccount.imageUrl,
-                    bio: currentAccount.bio,
-                });
-                setIsAuthenticated(true);
-                return true
-            }
+      const checkAuthUser = async (): Promise<boolean> => {
+        try {
+          const currentAccount = await getCurrentUser();
+    
+          if (isCurrentAccount(currentAccount)) {
+            setUser({
+              id: currentAccount.$id,
+              name: currentAccount.name,
+              username: currentAccount.username,
+              email: currentAccount.email,
+              imageUrl: currentAccount.imageUrl,
+              bio: currentAccount.bio
+            });
+            setIsAuthenticated(true);
+            return true;
+          } else {
+            console.error('Invalid account data');
             return false;
+          }
         } catch (error) {
-            console.log(error);
-            return false;
-            
+          console.error('Error fetching current user', error);
+          return false;
         } finally {
-            setIsLoading(false);
+          setIsLoading(false);
         }
-    }
+      };
 
     useEffect(() => {
         if(localStorage.getItem('cookieFallback') === '[]' || localStorage.getItem('cookieFallback') === null){
@@ -77,6 +82,7 @@ const AuthProvider = ({children}: {children: React.ReactNode} ) => {
     </AuthContext.Provider>
   )
 }
+
 
 export default AuthProvider;
 
