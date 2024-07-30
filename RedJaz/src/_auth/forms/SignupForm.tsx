@@ -25,9 +25,9 @@ const SignupForm = () => {
   const {checkAuthUser, isLoading: isUserLoading} = useUserContext()
   const navigate = useNavigate()
 
-  const {mutateAsync: createNewUserAccount, isLoading: isCreatingUser} = useCreateUserAccount()
+  const {mutateAsync: createNewUserAccount, isPending: isCreatingAccount} = useCreateUserAccount()
 
-  const {mutateAsync: signInAccount, isLoading: isSigningIn} = useSignInAccount()
+  const {mutateAsync: signInAccount, isPending: isSigningIn} = useSignInAccount()
 
     // 1. Define your form.
     const form = useForm<z.infer<typeof SingupValidation>>({
@@ -43,33 +43,42 @@ const SignupForm = () => {
    
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof SingupValidation>) {
-      const newUser = await createUserAccount(values)
-      if(!newUser){
+      console.log('Submitting signup form with values:', values);
+    
+      const newUser = await createUserAccount(values);
+      if (!newUser) {
+        console.error('Signup failed');
         return toast({
           title: 'Signup failed. Please try again',
-        })
+        });
       }
+      console.log('User created successfully:', newUser);
+    
       const session = await signInAccount({
         email: values.email,
         password: values.password,
-      })
-      if(!session){
+      });
+      if (!session) {
+        console.error('Sign in after signup failed');
         return toast({
           title: 'Sign in failed. Please try again',
-        })
+        });
       }
-
-      const isLoggedIn = await checkAuthUser()
-
-      if(isLoggedIn){
-        form.reset()
-        navigate('/')
-    } else {
-      return toast({
-        title: 'Sign in failed. Please try again',
-      })
+      console.log('Signed in successfully:', session);
+    
+      const isLoggedIn = await checkAuthUser();
+      console.log('Authentication check result:', isLoggedIn);
+    
+      if (isLoggedIn) {
+        form.reset();
+        navigate('/');
+      } else {
+        console.error('Authentication check failed');
+        return toast({
+          title: 'Authentication check failed. Please try again',
+        });
+      }
     }
-  }
   
   return (
     <Form {...form}>
@@ -144,7 +153,7 @@ const SignupForm = () => {
           )}
         />
         <Button type="submit" className="shad-button_primary">
-          {isCreatingUser ? (
+          {isCreatingAccount ? (
             <div className="flex-center gap-2" >
               <Loader /> Loading...
             </div>
