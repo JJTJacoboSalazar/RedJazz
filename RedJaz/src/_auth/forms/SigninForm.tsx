@@ -39,35 +39,40 @@ const SigninForm = () => {
    
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof SigninValidation>) {
-      console.log('we are here')
-    
-      const session = await signInAccount({
-        email: values.email,
-        password: values.password,
-      });
-      console.log('Sign in result:', {session});
-      
-      if (!session) {
-        console.error('Sign in after signup failed');
-        return toast({
-          title: 'Sign in failed. Please try again',
+      console.log('we are here');
+  
+      try {
+        const session = await signInAccount({
+          email: values.email,
+          password: values.password,
         });
-      }
-      console.log('Signed in successfully:', session);
-    
-      const isLoggedIn = await checkAuthUser();
-      console.log('Authentication check result:', {isLoggedIn});
-    
-      if (isLoggedIn) {
-        form.reset();
-
-        console.log('Navigating to home page');
-        
-        navigate('/');
-      } else {
-        // console.error('Authentication check failed');
-        return toast({
-          title: 'Authentication check failed. Please try again',
+        console.log('Sign in result:', { session });
+  
+        if (!session) {
+          console.error('Sign in after signup failed');
+          return toast({
+            title: 'Sign in failed. Please try again',
+          });
+        }
+        console.log('Signed in successfully:', session);
+  
+        const isLoggedIn = await checkAuthUser();
+        console.log('Authentication check result:', { isLoggedIn });
+  
+        if (isLoggedIn) {
+          form.reset();
+          console.log('Navigating to home page');
+          navigate('/');
+        } else {
+          console.error('Authentication check failed');
+          return toast({
+            title: 'Authentication check failed. Please try again',
+          });
+        }
+      } catch (error) {
+        console.error('Error during sign in:', error);
+        toast({
+          title: 'An error occurred. Please try again',
         });
       }
     }
