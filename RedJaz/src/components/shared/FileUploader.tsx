@@ -10,6 +10,7 @@ const FileUploader = ({fieldChange, mediaUrl}: any) => {
     const onDrop = useCallback(acceptedFiles => {
         setFile(acceptedFiles)
         fieldChange(acceptedFiles[0])
+        setFileUrl(URL.createObjectURL(acceptedFiles[0]))
       }, [])
       const {getRootProps, getInputProps} = useDropzone({
         onDrop, 
