@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useUserContext } from "@/context/AuthContext";
 import { useDeleteSavedPost, useLikePost, useSavePost } from "@/lib/react-query/queriesAndMutations";
 import { Models } from "appwrite";
@@ -21,11 +21,35 @@ const PostStats = ({post, userId}: PostStatsProps) => {
 
   const {data: currentUser} = useUserContext()
 
-  const handleLikePost = () => {
-  }
+const handleLikePost = (e: React.MouseEvent) => {
+    e.stopPropagation()
 
-  const handleSavePost = () => {
-  }
+    let newLikes: string[] = [...likes]
+    const hasLiked = newLikes.includes(userId)
+
+    if (hasLiked){
+        newLikes = newLikes.filter((id) => id !== userId)
+    } else {
+        newLikes.push(userId)
+    }
+
+    setLikes(newLikes)
+    likePost({postId: post.$id, likesArray: newLikes})	
+}
+
+const handleSavePost = (e: React.MouseEvent) => {
+    e.stopPropagation()
+
+    const savedPostRecord = currentUser?.save.find((record: Models.Document) => record.$id === post.$id)
+    if(savedPostRecord){
+        setIsSaved(false)
+        deleteSavedPost(savedPostRecord.$id)
+    } else {
+    savePost({postId: post.$id, userId})
+    setIsSaved(true)
+    }
+}
+
 
   return (
     <div className="flex justify-between items-center z-20">
@@ -40,7 +64,7 @@ const PostStats = ({post, userId}: PostStatsProps) => {
             <p className="small-medium lg:base-medium">{likes.length}</p>
         </div>
         <div className="flex gap-2 ">
-            <img src={`${isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"} `} alt="save" width={20} height={20} onClick={() => {}}
+            <img src={`${isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"} `} alt="save" width={20} height={20} onClick={handleSavePost}
             className="cursor-pointer" />
         </div>
 
