@@ -19,7 +19,7 @@ const PostStats = ({post, userId}: PostStatsProps) => {
   const {mutate: savePost} = useSavePost()
   const {mutate: deleteSavedPost} = useDeleteSavedPost()
 
-  const {data: currentUser} = useUserContext()
+  const {data: currentUser} = useGetCurrentUser()
 
 const handleLikePost = (e: React.MouseEvent) => {
     e.stopPropagation()
