@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useUserContext } from "@/context/AuthContext";
-import { useDeleteSavedPost, useLikePost, useSavePost } from "@/lib/react-query/queriesAndMutations";
+import { useDeleteSavedPost, useGetCurrentUser, useLikePost, useSavePost } from "@/lib/react-query/queriesAndMutations";
 import { Models } from "appwrite";
 import { checkIsLiked } from "@/lib/utils";
 
@@ -21,6 +20,12 @@ const PostStats = ({post, userId}: PostStatsProps) => {
 
   const {data: currentUser} = useGetCurrentUser()
 
+  const savedPostRecord = currentUser?.save.find((record: Models.Document) => record.$id === post.$id)
+
+    useEffect(() => {
+        setIsSaved(!!savedPostRecord)
+    }, [currentUser])
+
 const handleLikePost = (e: React.MouseEvent) => {
     e.stopPropagation()
 
@@ -40,7 +45,6 @@ const handleLikePost = (e: React.MouseEvent) => {
 const handleSavePost = (e: React.MouseEvent) => {
     e.stopPropagation()
 
-    const savedPostRecord = currentUser?.save.find((record: Models.Document) => record.$id === post.$id)
     if(savedPostRecord){
         setIsSaved(false)
         deleteSavedPost(savedPostRecord.$id)
