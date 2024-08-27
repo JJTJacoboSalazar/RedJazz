@@ -287,3 +287,22 @@ export async function deleteSavedPost(savedRecordId: string) {
         
     }
 }
+
+export async function getPostById(postId: string) {
+    try {
+        const post = await databases.getDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.postCollectionId,
+            postId
+        )
+        if(!post){
+            throw new Error('Post not found');
+        }
+
+        return post;
+        
+    } catch (error) {
+        console.log(error);
+        
+    }
+}
