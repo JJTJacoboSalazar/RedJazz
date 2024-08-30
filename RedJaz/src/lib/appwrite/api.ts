@@ -365,3 +365,24 @@ export async function updatePost(post: IUpdatePost) {
         
     }
 }
+
+export async function deletePost(postId: string, imageId: string){
+    if(!postId || !imageId){
+        throw new Error('Post not found');
+    }
+
+    try {
+        await databases.deleteDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.postCollectionId,
+            postId
+        )
+
+        return {status: 'success'};
+        
+    } catch (error) {
+        console.log(error);
+        return error;
+        
+    }
+}
