@@ -52,6 +52,7 @@ const PostForm = ({post, action}: PostFormProps) => {
           description: "Failed to update post",
         })
       }
+      return navigate(`/post/${post.$id}`)
     }
       
     const newPost = await createPost({
@@ -136,7 +137,7 @@ const PostForm = ({post, action}: PostFormProps) => {
         />
         <div className="flex gap-4 items-center justify-end" >
           <Button type="button" className="shad-button_dark_4">Cancel</Button>
-        <Button type="submit" className="shad-button_primary whitespace-nowrap" >Submit</Button>
+        <Button type="submit" className="shad-button_primary whitespace-nowrap" disabled={isLoadingCreate || isLoadingUpdate} > {isLoadingCreate || isLoadingUpdate && 'Loading...'} {action} Post </Button>
         </div>
       </form>
     </Form>
