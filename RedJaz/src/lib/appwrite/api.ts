@@ -413,3 +413,24 @@ export async function getInfinitePosts({pageParam}: {pageParam: number}) {
         
     }
 }
+
+export async function searchPosts(searchTerm: string) {
+    try {
+        const posts = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.postCollectionId,
+            [Query.search('caption', searchTerm), Query.limit(20)]
+        )
+
+        if(!posts){
+            throw new Error('Posts not found');
+        }
+
+        return posts;
+        
+    } catch (error) {
+        console.log(error);
+        return error;
+        
+    }
+}
