@@ -1,18 +1,28 @@
 import GridPostList from '@/components/shared/GridPostList'
+import Loader from '@/components/shared/Loader'
 import SearchResults from '@/components/shared/SearchResults'
 import { Input } from '@/components/ui/input'
-import { useSearchPosts } from '@/lib/react-query/queriesAndMutations'
+import useDebounce from '@/hooks/useDebounce'
+import { useGetPosts, useSearchPosts } from '@/lib/react-query/queriesAndMutations'
 import { useState } from 'react'
 
 const Explore = () => {
+  const {data: posts, fetchNextPage, hasNextPage} = useGetPosts()
+
   const [searchValue, setSearchValue] = useState('')
+  const debouncedValue = useDebounce(searchValue, 500)
+  const {data: searchedPosts, isFetching: isSearchingFetching} = useSearchPosts(debouncedValue)
 
-  const {data: searchedPosts, isFetching: isSearchingFetching} = useSearchPosts(searchValue)
+  if(!posts) {
+    return (
+      <div className='flex-center w-full h-full'>
+        <Loader/>
+      </div>
+    )
+  }
 
-  // const posts = []
-
-  // const shouldShowSearchResults = searchValue !== ''
-  // const shouldShowPosts = !shouldShowSearchResults && posts?.pages.every((item) => item.documents.length === 0)
+  const shouldShowSearchResults = searchValue !== ''
+  const shouldShowPosts = !shouldShowSearchResults && posts.pages.every((item) => item.documents.length === 0)
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
@@ -34,7 +44,7 @@ const Explore = () => {
           <img src="/assets/icons/filter-svg" alt="filter" width={20} height={20} />
         </div>
       </div>
-      {/* <div className='flex flex-wrap gap-9 w-full max-w-5x1'>
+      <div className='flex flex-wrap gap-9 w-full max-w-5x1'>
         {shouldShowSearchResults ? (
           <SearchResults/>
         ) : shouldShowPosts ? (
@@ -44,7 +54,7 @@ const Explore = () => {
           ))
           
         } 
-      </div> */}
+      </div>
     </div>
   )
 }
