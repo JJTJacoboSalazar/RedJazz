@@ -1,4 +1,4 @@
-import { ID, ImageGravity, Query } from "appwrite";
+import { ID, Query } from "appwrite";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
 import { INewPost, INewUser, IUpdatePost } from "../../types/index";
 
@@ -71,7 +71,7 @@ export async function signInAccount(user: {
         }
 
         // Crear una nueva sesión
-        const session = await account.createEmailPasswordSession(user.email, user.password);
+        const session = await account.createEmailSession(user.email, user.password);
         return session;
     } catch (error) {
         console.log(error);
@@ -187,7 +187,7 @@ export function getFilePreview(fileId: string) {
         fileId,
         2000,
         2000,
-        ImageGravity.Top,
+        "Top",
         100
       );
   
