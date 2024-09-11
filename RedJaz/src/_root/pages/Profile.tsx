@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Route,
   Routes,
@@ -10,7 +11,7 @@ import {
 import { Button } from "@/components/ui";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById } from "@/lib/react-query/queries";
+import { useFollowUser, useGetUserById, useUnfollowUser } from "@/lib/react-query/queries";
 import { GridPostList, Loader } from "@/components/shared";
 
 interface StabBlockProps {
@@ -31,6 +32,53 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
+
+  const [followers, setFollowers] = useState<number>(0);
+  const [following, setFollowing] = useState<number>(0);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+
+  const followUser = useFollowUser();
+  const unfollowUser = useUnfollowUser();
+
+  useEffect(() => {
+    if (currentUser) {
+      setFollowers(currentUser.followers ? currentUser.followers.length : 0);
+      setFollowing(currentUser.following ? currentUser.following.length : 0);
+      setIsFollowing(currentUser.followers ? currentUser.followers.includes(user.id) : false);
+    }
+  }, [currentUser, user.id]);
+
+  const handleFollow = () => {
+    const updatedFollowers = followers + 1;
+    followUser.mutate(
+      { userId: id || "", followersArray: [updatedFollowers.toString()] },
+      {
+        onSuccess: () => {
+          setFollowers(updatedFollowers);
+          setIsFollowing(true);
+        },
+        onError: (error) => {
+          console.error("Error following user:", error);
+        },
+      }
+    );
+  };
+
+  const handleUnfollow = () => {
+    const updatedFollowers = followers - 1;
+    unfollowUser.mutate(
+      { userId: id || "", followersArray: [updatedFollowers.toString()] },
+      {
+        onSuccess: () => {
+          setFollowers(updatedFollowers);
+          setIsFollowing(false);
+        },
+        onError: (error) => {
+          console.error("Error unfollowing user:", error);
+        },
+      }
+    );
+  };
 
   if (!currentUser)
     return (
@@ -62,8 +110,8 @@ const Profile = () => {
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
               <StatBlock value={currentUser.posts.length} label="Posts" />
-              <StatBlock value={20} label="Followers" />
-              <StatBlock value={20} label="Following" />
+              <StatBlock value={followers} label="Followers" />
+              <StatBlock value={following} label="Following" />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
@@ -90,8 +138,12 @@ const Profile = () => {
               </Link>
             </div>
             <div className={`${user.id === id && "hidden"}`}>
-              <Button type="button" className="shad-button_primary px-8">
-                Follow
+              <Button
+                type="button"
+                className="shad-button_primary px-8"
+                onClick={isFollowing ? handleUnfollow : handleFollow}
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
               </Button>
             </div>
           </div>

@@ -544,3 +544,81 @@ export async function updateUser(user: IUpdateUser) {
     console.log(error);
   }
 }
+
+// ============================== FOLLOW USER 
+
+export async function followUser(userId: string, followersArray: string[]) {
+  try {
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        followers: followersArray,
+      }
+    );
+
+    if (!updatedUser) throw Error;
+
+    return updatedUser;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== UNFOLLOW USER
+
+export async function unfollowUser(userId: string, followersArray: string[]) {
+  try {
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        followers: followersArray,
+      }
+    );
+
+    if (!updatedUser) throw Error;
+
+    return updatedUser;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET FOLLOWERS
+
+export async function getFollowers(userId: string) {
+  try {
+    const user = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    if (!user) throw Error;
+
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET FOLLOWING
+
+export async function getFollowing(userId: string) {
+  try {
+    const user = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    if (!user) throw Error;
+
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+}

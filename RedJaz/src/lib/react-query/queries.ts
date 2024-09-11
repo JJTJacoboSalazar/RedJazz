@@ -25,6 +25,10 @@ import {
   searchPosts,
   savePost,
   deleteSavedPost,
+  followUser,
+  unfollowUser,
+  getFollowers,
+  getFollowing,
 } from "@/lib/appwrite/api";
 import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 
@@ -242,5 +246,64 @@ export const useUpdateUser = () => {
         queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
       });
     },
+  });
+};
+
+
+// ============================================================
+// FOLLOW QUERIES
+// ============================================================
+
+export const useFollowUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    ({ userId, followersArray }: { userId: string; followersArray: string[] }) =>
+      followUser(userId, followersArray),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+        });
+      }
+    }
+  );
+};
+
+export const useUnfollowUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    ({ userId, followersArray }: { userId: string; followersArray: string[] }) =>
+      unfollowUser(userId, followersArray),
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+        });
+      }
+    }
+  );
+};
+
+export const useGetFollowers = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_FOLLOWERS, userId],
+    queryFn: () => getFollowers(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetFollowing = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_FOLLOWERS, userId],
+    queryFn: () => getFollowing(userId),
+    enabled: !!userId,
   });
 };
