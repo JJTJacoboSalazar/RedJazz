@@ -46,3 +46,19 @@ export type INewUser = {
   username: string;
   password: string;
 };
+
+export type IUserData = {
+  $id: string;
+  $collectionId: string;
+  $databaseId: string;
+  $createdAt: string;
+  $updatedAt: string;
+  $permissions: string[];
+  name: string;
+  username: string;
+  bio: string;
+  imageUrl: string;
+  posts: any[]; // Ajusta el tipo según la estructura de tus posts
+  followers: { followerId: string }[];
+  following: { userId: string }[];
+}

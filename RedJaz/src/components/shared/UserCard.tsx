@@ -1,15 +1,19 @@
 import { Models } from "appwrite";
 import { Link } from "react-router-dom";
 
-import { Button } from "../ui/button";
+// import FollowButton from "./FollowButton";
+import React from "react";
 
 type UserCardProps = {
   user: Models.Document;
+  
 };
 
-const UserCard = ({ user }: UserCardProps) => {
+
+const UserCard: React.FC<UserCardProps> = ({ user }) => {
   return (
-    <Link to={`/profile/${user.$id}`} className="user-card">
+    <div className="user-card">
+    <Link to={`/profile/${user.$id}`}>
       <img
         src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
         alt="creator"
@@ -25,10 +29,13 @@ const UserCard = ({ user }: UserCardProps) => {
         </p>
       </div>
 
-      <Button type="button" size="sm" className="shad-button_primary px-5">
-        Follow
-      </Button>
     </Link>
+      {/* <FollowButton
+        userId={user.$id}
+        initialIsFollowing={false}
+        onFollowChange={() => {}}
+      /> */}
+    </div>
   );
 };
 

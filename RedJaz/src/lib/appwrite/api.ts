@@ -479,9 +479,24 @@ export async function getUserById(userId: string) {
       userId
     );
 
+    const followers = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followersCollectionId,
+      [Query.equal("userId", userId)]
+    );
+
+    const following = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followersCollectionId,
+      [Query.equal("followerId", userId)]
+    );
+
     if (!user) throw Error;
 
-    return user;
+    return { ...user, 
+      followers: followers.documents, 
+      following: following.documents } as any
+
   } catch (error) {
     console.log(error);
   }
@@ -547,61 +562,57 @@ export async function updateUser(user: IUpdateUser) {
 
 // ============================== FOLLOW USER 
 
-export async function followUser(userId: string, followersArray: string[]) {
+export async function followUser(userId: string, followingId: string) {
   try {
-    const updatedUser = await databases.updateDocument(
+    if (typeof followingId !== 'string' || followingId.length > 1000) {
+      throw new Error("Invalid followerId: must be a string and no longer than 1000 characters");
+    }
+
+    const newFollower = await databases.createDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      userId,
+      appwriteConfig.followersCollectionId,
+      ID.unique(),
       {
-        followers: followersArray,
+        userId: userId,
+        followerId: followingId,
       }
     );
 
-    if (!updatedUser) throw Error;
+    if (!newFollower) throw new Error("Failed to follow user");
 
-    return updatedUser;
+    return newFollower;
   } catch (error) {
     console.log(error);
   }
 }
 
-// ============================== UNFOLLOW USER
-
-export async function unfollowUser(userId: string, followersArray: string[]) {
+export async function unfollowUser(userId: string, followerId: string) {
   try {
-    const updatedUser = await databases.updateDocument(
+    const followers = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      userId,
-      {
-        followers: followersArray,
-      }
+      appwriteConfig.followersCollectionId,
+      [
+        Query.equal("userId", userId),
+        Query.equal("followerId", followerId),
+      ]
     );
 
-    if (!updatedUser) throw Error;
+    if (followers.total === 0) throw new Error("Follower not found");
 
-    return updatedUser;
-  } catch (error) {
-    console.log(error);
-  }
-}
+    const followerIdToDelete = followers.documents[0].$id;
 
-// ============================== GET FOLLOWERS
-
-export async function getFollowers(userId: string) {
-  try {
-    const user = await databases.getDocument(
+    const deletedFollower = await databases.deleteDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      userId
+      appwriteConfig.followersCollectionId,
+      followerIdToDelete
     );
 
-    if (!user) throw Error;
+    if (!deletedFollower) throw new Error("Failed to delete follower");
 
-    return user;
+    return deletedFollower;
   } catch (error) {
-    console.log(error);
+    console.error("Error deleting follower:", error);
+    throw error; // Re-throw the error after logging it
   }
 }
 
@@ -609,16 +620,36 @@ export async function getFollowers(userId: string) {
 
 export async function getFollowing(userId: string) {
   try {
-    const user = await databases.getDocument(
+    const following = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      userId
+      appwriteConfig.followersCollectionId,
+      [
+        Query.equal("followerId", userId),
+      ]
     );
 
-    if (!user) throw Error;
-
-    return user;
+    return following.documents.map(doc => doc.userId);
   } catch (error) {
-    console.log(error);
+    console.error("Error getting following:", error);
+    throw error; // Re-throw the error after logging it
+  }
+}
+
+// ============================== GET FOLLOWERS
+
+export async function getFollowers(userId: string) {
+  try {
+    const followers = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followersCollectionId,
+      [
+        Query.equal("userId", userId),
+      ]
+    );
+
+    return followers.documents.map(doc => doc.followerId);
+  } catch (error) {
+    console.error("Error getting followers:", error);
+    throw error; // Re-throw the error after logging it
   }
 }

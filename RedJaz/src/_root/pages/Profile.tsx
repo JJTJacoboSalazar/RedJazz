@@ -8,18 +8,18 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import { Button } from "@/components/ui";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useFollowUser, useGetUserById, useUnfollowUser } from "@/lib/react-query/queries";
+import { useGetUserById } from "@/lib/react-query/queries";
 import { GridPostList, Loader } from "@/components/shared";
+import FollowButton from "@/components/shared/FollowButton"; // Asegúrate de importar el componente FollowButton
 
-interface StabBlockProps {
+interface StatBlockProps {
   value: string | number;
   label: string;
 }
 
-const StatBlock = ({ value, label }: StabBlockProps) => (
+const StatBlock = ({ value, label }: StatBlockProps) => (
   <div className="flex-center gap-2">
     <p className="small-semibold lg:body-bold text-primary-500">{value}</p>
     <p className="small-medium lg:base-medium text-light-2">{label}</p>
@@ -31,53 +31,23 @@ const Profile = () => {
   const { user } = useUserContext();
   const { pathname } = useLocation();
 
-  const { data: currentUser } = useGetUserById(id || "");
+  const { data: currentUser, refetch } = useGetUserById(id || "");
 
   const [followers, setFollowers] = useState<number>(0);
   const [following, setFollowing] = useState<number>(0);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
 
-  const followUser = useFollowUser();
-  const unfollowUser = useUnfollowUser();
-
   useEffect(() => {
     if (currentUser) {
       setFollowers(currentUser.followers ? currentUser.followers.length : 0);
       setFollowing(currentUser.following ? currentUser.following.length : 0);
-      setIsFollowing(currentUser.followers ? currentUser.followers.includes(user.id) : false);
+      setIsFollowing(currentUser.followers ? currentUser.followers.some((follower: any) => follower.followerId === user.id) : false);
     }
   }, [currentUser, user.id]);
 
-  const handleFollow = () => {
-    const updatedFollowers = followers + 1;
-    followUser.mutate(
-      { userId: id || "", followersArray: [updatedFollowers.toString()] },
-      {
-        onSuccess: () => {
-          setFollowers(updatedFollowers);
-          setIsFollowing(true);
-        },
-        onError: (error) => {
-          console.error("Error following user:", error);
-        },
-      }
-    );
-  };
-
-  const handleUnfollow = () => {
-    const updatedFollowers = followers - 1;
-    unfollowUser.mutate(
-      { userId: id || "", followersArray: [updatedFollowers.toString()] },
-      {
-        onSuccess: () => {
-          setFollowers(updatedFollowers);
-          setIsFollowing(false);
-        },
-        onError: (error) => {
-          console.error("Error unfollowing user:", error);
-        },
-      }
-    );
+  const handleFollowChange = (newIsFollowing: boolean) => {
+    setIsFollowing(newIsFollowing);
+    refetch(); // Refetch the user data to update the followers count
   };
 
   if (!currentUser)
@@ -138,13 +108,11 @@ const Profile = () => {
               </Link>
             </div>
             <div className={`${user.id === id && "hidden"}`}>
-              <Button
-                type="button"
-                className="shad-button_primary px-8"
-                onClick={isFollowing ? handleUnfollow : handleFollow}
-              >
-                {isFollowing ? "Unfollow" : "Follow"}
-              </Button>
+              <FollowButton
+                userId={currentUser.$id}
+                initialIsFollowing={isFollowing}
+                onFollowChange={handleFollowChange}
+              />
             </div>
           </div>
         </div>

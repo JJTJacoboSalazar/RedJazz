@@ -243,7 +243,7 @@ export const useUpdateUser = () => {
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID, (data as { $id: string })?.$id],
       });
     },
   });
@@ -258,8 +258,7 @@ export const useFollowUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    ({ userId, followersArray }: { userId: string; followersArray: string[] }) =>
-      followUser(userId, followersArray),
+    ({ userId, followerId}: { userId: string; followerId: string }) => followUser(userId, followerId),
     {
       onSuccess: (data) => {
         queryClient.invalidateQueries({
@@ -270,17 +269,17 @@ export const useFollowUser = () => {
         });
       }
     }
-  );
-};
+  )
+}
 
 export const useUnfollowUser = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    ({ userId, followersArray }: { userId: string; followersArray: string[] }) =>
-      unfollowUser(userId, followersArray),
+    ({ userId, followerId }: { userId: string; followerId: string }) =>
+      unfollowUser(userId, followerId),
     {
-      onSuccess: (data) => {
+      onSuccess: (data: any) => {
         queryClient.invalidateQueries({
           queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
         });
