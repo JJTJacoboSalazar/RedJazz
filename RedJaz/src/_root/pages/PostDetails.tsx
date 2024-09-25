@@ -56,7 +56,7 @@ const PostDetails = () => {
           <img
             src={post?.imageUrl}
             alt="creator"
-            className="post_details-img"
+            className="post_details-img w-full"
           />
 
           <div className="post_details-info">
