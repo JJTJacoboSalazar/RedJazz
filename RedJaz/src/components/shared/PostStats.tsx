@@ -28,8 +28,8 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
 
   const { data: currentUser } = useGetCurrentUser();
 
-  const savedPostRecord = currentUser?.save.find(
-    (record: Models.Document) => record.post.$id === post.$id
+  const savedPostRecord = currentUser?.save?.find(
+    (record: Models.Document) => record.post?.$id === post?.$id
   );
 
   useEffect(() => {
@@ -50,7 +50,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     }
 
     setLikes(likesArray);
-    likePost({ postId: post.$id, likesArray });
+    if (post && post.$id) {
+      likePost({ postId: post.$id, likesArray });
+    }
   };
 
   const handleSavePost = (
@@ -63,8 +65,10 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
       return deleteSavePost(savedPostRecord.$id);
     }
 
-    savePost({ userId: userId, postId: post.$id });
-    setIsSaved(true);
+    if (post && post.$id) {
+      savePost({ userId: userId, postId: post.$id });
+      setIsSaved(true);
+    }
   };
 
   const containerStyles = location.pathname.startsWith("/profile")
